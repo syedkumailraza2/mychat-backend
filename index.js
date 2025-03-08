@@ -1,51 +1,30 @@
-let port = process.env.PORT || 5000;
+import express, { json } from 'express'
+import dotenv from "dotenv";
+import { Server } from "socket.io";
+import http from "http"
+import connectDB from './config/db.js';
+import userRouter from './routes/user.route.js';
 
-let IO = require("socket.io")(port, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-  },
-});
+const app = express()
+const server = http.createServer(app)
+const io = new Server(server)
 
-IO.use((socket, next) => {
-  if (socket.handshake.query) {
-    let callerId = socket.handshake.query.callerId;
-    socket.user = callerId;
-    next();
-  }
-});
+dotenv.config();
+const port = process.env.PORT || 5000
 
-IO.on("connection", (socket) => {
-  console.log(socket.user, "Connected");
-  socket.join(socket.user);
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }))
+app.use(json())
 
-  socket.on("makeCall", (data) => {
-    let calleeId = data.calleeId;
-    let sdpOffer = data.sdpOffer;
+connectDB()
 
-    socket.to(calleeId).emit("newCall", {
-      callerId: socket.user,
-      sdpOffer: sdpOffer,
-    });
-  });
+app.get('/', (req,res)=>{
+    res.send('Hello World')
+})
 
-  socket.on("answerCall", (data) => {
-    let callerId = data.callerId;
-    let sdpAnswer = data.sdpAnswer;
+app.use('/user', userRouter)
 
-    socket.to(callerId).emit("callAnswered", {
-      callee: socket.user,
-      sdpAnswer: sdpAnswer,
-    });
-  });
-
-  socket.on("IceCandidate", (data) => {
-    let calleeId = data.calleeId;
-    let iceCandidate = data.iceCandidate;
-
-    socket.to(calleeId).emit("IceCandidate", {
-      sender: socket.user,
-      iceCandidate: iceCandidate,
-    });
-  });
-});
+app.listen(port, ()=>{
+    console.log(`server running on http://localhost:${port}`);
+    
+})
