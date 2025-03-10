@@ -4,10 +4,14 @@ import { Server } from "socket.io";
 import http from "http"
 import connectDB from './config/db.js';
 import userRouter from './routes/user.route.js';
+import chatRouter from './routes/chat.routes.js';
+import handleSocket from './socket.js';
 
 const app = express()
 const server = http.createServer(app)
 const io = new Server(server)
+
+handleSocket(io)
 
 dotenv.config();
 const port = process.env.PORT || 5000
@@ -23,8 +27,9 @@ app.get('/', (req,res)=>{
 })
 
 app.use('/user', userRouter)
+app.use('/chat',chatRouter)
 
-app.listen(port, ()=>{
+server.listen(port, ()=>{
     console.log(`server running on http://localhost:${port}`);
     
 })
