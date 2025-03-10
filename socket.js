@@ -18,6 +18,7 @@ IO.on("connection", (socket) => {
   socket.on("joinChatRoom", ({ userId, receiverId }) => {
     const roomId = [userId, receiverId].sort().join("_");
     socket.join(roomId);
+    socket.join(userId); 
     console.log(`User ${userId} joined room: ${roomId}`);
     setTimeout(() => {
         IO.to(roomId).emit("roomJoined", roomId);
