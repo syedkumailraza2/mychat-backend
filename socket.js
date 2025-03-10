@@ -42,6 +42,8 @@ IO.on("connection", (socket) => {
     let calleeId = data.calleeId;
     let sdpOffer = data.sdpOffer;
 
+    console.log(`Outgoing Call: Caller -> ${socket.user}, Callee -> ${calleeId}`);
+
     socket.to(calleeId).emit("newCall", {
       callerId: socket.user,
       sdpOffer: sdpOffer,
